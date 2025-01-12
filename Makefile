@@ -23,7 +23,7 @@ $(BUILD_DIR)/linked.o: $(OBJ)
 	$(LD) -T linker.ld -o $@ $^
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.s
-	@mkdir -p $(dir $@)
+	mkdir -p $(dir $@)
 	$(ASM) $< -o $@
 
 clean:
