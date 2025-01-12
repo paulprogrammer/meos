@@ -13,7 +13,7 @@ OBJ = $(patsubst $(SRC_DIR)/%.s, $(BUILD_DIR)/%.o, $(SRC))
 all: $(BUILD_DIR)/os-image.bin
 
 run: $(BUILD_DIR)/os-image.bin
-	qemu-system-x86_64 -no-reboot -nographic -drive file=$<,format=raw,index=0,media=disk
+	qemu-system-x86_64 -no-reboot -drive file=$<,format=raw,index=0,media=disk
 
 $(BUILD_DIR)/os-image.bin: $(BUILD_DIR)/linked.o
 	objcopy -O binary $< $@
