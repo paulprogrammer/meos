@@ -20,10 +20,6 @@
 
 ;;; this stuff is still 16 bit mode
 
-end:
-	hlt
-	jmp $
-
 print_string:
 	pusha
 	mov ah, 0x0e		; bios print char function
@@ -75,9 +71,17 @@ start_prot_mode:
     or eax, 1 << 8
     wrmsr
 
-	jmp $
+    ; enable paging
+    mov eax, cr0
+    or eax, 1 << 31
+    mov cr0, eax
 
-%include "include/gdt.s"
+    mov ebx, compatibility_message
+    call print_string32
+
+    lgdt [gdt64_pseudo_descriptor]
+
+    jmp CODE_SEG64:start_long_mode
 
 ; as we're in protected mode, we can no longer rely on bios
 ; so we'll have to write directly to the VGA buffer
@@ -115,13 +119,10 @@ build_page_table:
     PAGE64_TAB_SIZE equ 0x1000
     PAGE64_TAB_ENT_NUM equ 512
 
-    ;; Initialize all four tables to 0. If the present flag is cleared, all other bits in any
-    ;; entry are ignored. So by filling all entries with zeros, they are all "not present".
-    ;; Each repetition zeros four bytes at once. That's why a number of repetitions equal to
-    ;; the size of a single page table is enough to zero all four tables.
-    mov ecx, PAGE64_TAB_SIZE ; ecx stores the number of repetitions
-    mov edi, ebx             ; edi stores the base address
-    xor eax, eax             ; eax stores the value
+    ;; Initialize all four tables to 0.
+    mov ecx, PAGE64_TAB_SIZE ; number of repetitions
+    mov edi, ebx             ; base address
+    xor eax, eax             ; value
     rep stosd
 
     ;; Link first entry in PML4 table to the PDP table
@@ -152,5 +153,25 @@ build_page_table_set_entry:
     popa
     ret
 
+    [bits 64]
+
+start_long_mode:
+	mov ebx, longmode_message
+	call print_string64
+
+	extern _start_kernel
+	call _start_kernel
+
+end64:
+	hlt
+	jmp $
+
+	
+%include "include/print64.s"
+%include "include/gdt.s"
+%include "include/gdt64.s"
+
 stage2_msg: db "Hello from stage 2", 0x0d, 0x0a, 0x0d, 0x0a, 0
 protected_message: db "Hello from protected mode", 0
+compatibility_message: db "in 64-bit compatible mode", 0
+longmode_message: db "now in 64-bit mode", 0

@@ -11,3 +11,5 @@ I used the following references for learning the process:
 
 * https://wiki.osdev.org/Global_Descriptor_Table
 * https://wiki.osdev.org/Disk_access_using_the_BIOS_(INT_13h)
+* https://os.phil-opp.com/paging-introduction/
+* https://pages.cs.wisc.edu/~remzi/OSTEP/
