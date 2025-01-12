@@ -1,29 +1,31 @@
 LD=ld
-ASM=nasm
+ASM=nasm -f elf64
 CC=gcc
 
-.PHONY: all run clean build
-all: run
-build: os-image.bin
+BUILD_DIR=build
+SRC_DIR=src
 
-kernel.bin: kernel-entry.o kernel.o
-	$(LD) -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
+SRC = $(wildcard $(SRC_DIR)/*.s)
+OBJ = $(patsubst $(SRC_DIR)/%.s, $(BUILD_DIR)/%.o, $(SRC))
 
-kernel-entry.o: kernel-entry.asm
-	$(ASM) $< -f elf -o $@
+.PHONY: all run clean
 
-kernel.o: kernel.asm
-	#$(CC) -m32 -fno-pic -ffreestanding -c $< -o $@
-	$(ASM) $< -f elf -o $@
+all: $(BUILD_DIR)/os-image.bin
 
-mbr.bin: mbr.asm switch-to-32bit.asm gdt.asm disk.asm 
-	$(ASM) $< -f bin -o $@
+run: $(BUILD_DIR)/os-image.bin
+	qemu-system-x86_64 -no-reboot -nographic -drive file=$<,format=raw,index=0,media=disk
 
-os-image.bin: mbr.bin kernel.bin
-	cat $^ > $@
+$(BUILD_DIR)/os-image.bin: $(BUILD_DIR)/linked.o
+	objcopy -O binary $< $@
 
-run: os-image.bin
-	qemu-system-i386 -vnc 0.0.0.0:0 -fda $<
+
+$(BUILD_DIR)/linked.o: $(OBJ)
+	$(LD) -T linker.ld -o $@ $^
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.s
+	@mkdir -p $(dir $@)
+	$(ASM) $< -o $@
 
 clean:
-	$(RM) *.bin *.o *.dis
+	$(RM) -f *.bin *.o *.dis
+	$(RM) -rf $(BUILD_DIR)
