@@ -1,7 +1,7 @@
 LD=ld
 ASM=nasm -f elf64
 CC=gcc
-CFLAGS=-std=c99 -ffreestanding -m64 -mno-red-zone -fno-builtin -nostdinc -Wall -Wextra
+CFLAGS=-Iinclude -std=c99 -ffreestanding -m64 -mno-red-zone -fno-builtin -nostdinc -Wall -Wextra
 
 BUILD_DIR=build
 SRC_DIR=src
