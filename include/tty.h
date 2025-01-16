@@ -1,9 +1,11 @@
 #pragma once
 
+#include "types.h"
+
 #define TAB_STOP_SIZE (4)
 
 // unsigned integer size 8 bits (0-255)
-typedef unsigned char uint8;
+//typedef unsigned char uint8;
 
 // yes, assignments are unnecessary, but provided for completeness
 typedef enum text_color {
@@ -26,13 +28,13 @@ typedef enum text_color {
 } text_color;
 
 typedef struct {
-	const uint8 x;
-	const uint8 y;
+	const uint8_t x;
+	const uint8_t y;
 } t_screen_size;
 
 typedef struct {
-	uint8 x;
-	uint8 y;
+	uint8_t x;
+	uint8_t y;
 } t_cursor_coord;
 
 /* set the color for the next output */

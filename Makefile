@@ -10,7 +10,7 @@ SRC_DIR=src
 SRC = $(wildcard $(SRC_DIR)/*)
 OBJ = $(patsubst $(SRC_DIR)/%, $(BUILD_DIR)/%.o, $(SRC))
 
-.PHONY: all run clean
+.PHONY: all run clean include/types.h
 
 all: $(BUILD_DIR)/os-image.bin
 
@@ -19,7 +19,6 @@ run: $(BUILD_DIR)/os-image.bin
 
 $(BUILD_DIR)/os-image.bin: $(BUILD_DIR)/linked.o
 	objcopy -O binary $< $@
-
 
 $(BUILD_DIR)/linked.o: $(OBJ)
 	$(LD) -T linker.ld -o $@ $^

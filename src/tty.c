@@ -6,23 +6,23 @@
 #define CHAR_LOCATION(x,y) (((int) x*2) + (y*(VGA_COLUMNS_NUM * 2)))
 #define COLOR_LOCATION(x,y) ((((int) x*2) + (y*(VGA_COLUMNS_NUM * 2))+1))
 
-#define COMPOSE_COLOR(fgnd,bkgnd) ((uint8) ((text_color) fgnd)<<4 | ((text_color) bkgnd))
+#define COMPOSE_COLOR(fgnd,bkgnd) ((uint8_t) ((text_color) fgnd)<<4 | ((text_color) bkgnd))
 
 #include "tty.h"
 #include "memops.h"
 
-volatile uint8 *vga_buf = (uint8 *)0xb8000;
-const uint8 cursor='\xf9';
+volatile uint8_t *vga_buf = (uint8_t *)0xb8000;
+const uint8_t cursor='\xf9';
 
 // default = lt gray on black
-uint8 color = 0x07;
+uint8_t color = 0x07;
 
 t_cursor_coord current_pos = {
 	.x = 0,
 	.y = 0
 };
 
-inline void set_color(text_color background, text_color foreground) {
+void set_color(text_color background, text_color foreground) {
 	color = COMPOSE_COLOR(foreground, background);
 }
 
@@ -61,7 +61,7 @@ void _carrage_return() {
 void _putch_tab() {
 	hide_cursor();
 	// figure out the next tab stop
-	uint8 tab = (TAB_STOP_SIZE - (current_pos.x % TAB_STOP_SIZE));
+	uint8_t tab = (TAB_STOP_SIZE - (current_pos.x % TAB_STOP_SIZE));
 	// tab now holds the number of spaces needed to get the next tab column
 	// however, if the tab extends beyond the end of the visibile screen, 
 	// just advance to the next row.

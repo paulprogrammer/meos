@@ -12,6 +12,7 @@ void _start_kernel(void) {
 	/* write our welcome message... */
 	puts( msg );
 	putch( '\n' );
+	putch( '\n' );
 
 	set_color( YELLOW, BLUE );
 	puts( "I (should) look like an old IBM PC XT\n" );
