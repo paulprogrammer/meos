@@ -6,18 +6,25 @@
 #define CHAR_LOCATION(x,y) (((int) x*2) + (y*(VGA_COLUMNS_NUM * 2)))
 #define COLOR_LOCATION(x,y) ((((int) x*2) + (y*(VGA_COLUMNS_NUM * 2))+1))
 
+#define COMPOSE_COLOR(fgnd,bkgnd) ((uint8) ((text_color) fgnd)<<4 | ((text_color) bkgnd))
+
 #include "tty.h"
 #include "memops.h"
 
 volatile uint8 *vga_buf = (uint8 *)0xb8000;
 const uint8 cursor='\xf9';
 
+// default = lt gray on black
 uint8 color = 0x07;
 
 t_cursor_coord current_pos = {
 	.x = 0,
 	.y = 0
 };
+
+inline void set_color(text_color background, text_color foreground) {
+	color = COMPOSE_COLOR(foreground, background);
+}
 
 void advance_cursor() {
 	current_pos.x++;
@@ -68,30 +75,39 @@ void _putch_tab() {
 }
 
 int putch(const char c) {
-	if( c == '\t') {
-		_putch_tab();
-		return 1;
-	}
+	switch(c) {
+	case 0 ... 0x08:
+	case 0x0b ... 0x1f:
+	case 0x7f:
+		// control chars, excepting \n and \t which we define below.
+		// TODO: 
+		//  0x08 (backspace): delete the character before the cursor, decrement location
+		//  0x7f (del): delete the character before the cursor, decrement location
+		//	0x07 (\b, bell): ding, flash screen
+		break;
 
-	vga_buf[CHAR_LOCATION(current_pos.x,current_pos.y)]=c;
-	advance_cursor();
-	show_cursor();
+	case '\n':
+		_carrage_return();
+		break;
+
+	case '\t': 
+		_putch_tab();
+		break;
+	
+	default:
+		vga_buf[CHAR_LOCATION(current_pos.x,current_pos.y)]=c;
+		vga_buf[COLOR_LOCATION(current_pos.x,current_pos.y)]=color;
+		advance_cursor();
+		show_cursor();
+		break;
+	}
 	return 1;
 }
 
 int puts(const char* const s) {
 	int output = 0;
 	for( int i=0; s[i] != '\0'; i++) {
-		const char c = s[i];
-		switch(c) {
-		case '\n':
-			_carrage_return();
-			output ++;
-			break;
-
-		default:
-			output += putch(s[i]);
-		}		
+		output += putch(s[i]);
 	}
 	return output;
 }
